@@ -14,3 +14,5 @@ for (i in 1:length(linn)){
 print(love_cnt/hate_cnt)
 
 close(con)
+
+
