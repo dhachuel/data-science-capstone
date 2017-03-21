@@ -84,7 +84,7 @@ input_text <- "Every inch of you is perfect from the bottom to the"
 test_words <- c('center', 'side', 'top', 'middle')
 # top
 
-input_text <- "I’m thankful my childhood was filled with imagination and bruises from playing"
+input_text <- "I'm thankful my childhood was filled with imagination and bruises from playing"
 test_words <- c('daily', 'outside', 'weekly', 'inside')
 # outside
 
@@ -92,53 +92,78 @@ input_text <- "I like how the same people are in almost all of Adam Sandler's"
 test_words <- c('novels', 'pictures', 'movies', 'stories')
 # movies
 
-input_text <- tolower(input_text)
-input_words <- tail(tokenizers::tokenize_words(input_text)[[1]],4)
-result.all <- sort(table(factor(m_ngrams[{
-  {
-    m_ngrams$input_1 == input_words[1] &
-    m_ngrams$input_2 == input_words[2] &
-    m_ngrams$input_3 == input_words[3] &
-    m_ngrams$input_4 == input_words[4]
-  } |
-  {
-    m_ngrams$input_2 == input_words[2] &
-    m_ngrams$input_3 == input_words[3] &
-    m_ngrams$input_4 == input_words[4]
-  } |
-  {
-    m_ngrams$input_3 == input_words[3] &
-    m_ngrams$input_4 == input_words[4]
-  } |
-  {
-    m_ngrams$input_4 == input_words[4]
+applyNgram <- function(ngram_data, input_text, top_selection=5){
+  
+  # Pre-process and clean input text
+  input_text <- tolower(input_text)
+  input_words <- tail(tokenizers::tokenize_words(input_text)[[1]],4)
+  
+  if(length(input_words) >= 4){
+    result.all <- sort(table(factor(m_ngrams[{
+      {
+        m_ngrams$input_1 == input_words[1] &
+          m_ngrams$input_2 == input_words[2] &
+          m_ngrams$input_3 == input_words[3] &
+          m_ngrams$input_4 == input_words[4]
+      } |
+      {
+        m_ngrams$input_2 == input_words[2] &
+          m_ngrams$input_3 == input_words[3] &
+          m_ngrams$input_4 == input_words[4]
+      } |
+      {
+        m_ngrams$input_3 == input_words[3] &
+          m_ngrams$input_4 == input_words[4]
+      } |
+      {
+        m_ngrams$input_4 == input_words[4]
+      }
+      
+    },]$input_5)), decreasing = TRUE)
+  } else if(length(input_words) == 3){
+    result.all <- sort(table(factor(m_ngrams[{
+      {
+        m_ngrams$input_2 == input_words[1] &
+          m_ngrams$input_3 == input_words[2] &
+          m_ngrams$input_4 == input_words[3]
+      } |
+      {
+        m_ngrams$input_3 == input_words[2] &
+          m_ngrams$input_4 == input_words[3]
+      } |
+      {
+        m_ngrams$input_4 == input_words[3]
+      }
+      
+    },]$input_5)), decreasing = TRUE)
+  } else if(length(input_words) == 2){
+    result.all <- sort(table(factor(m_ngrams[{
+      {
+        m_ngrams$input_3 == input_words[1] &
+          m_ngrams$input_4 == input_words[2]
+      } |
+      {
+        m_ngrams$input_4 == input_words[2]
+      }
+      
+    },]$input_5)), decreasing = TRUE)
+  } else if(length(input_words) == 2){
+    result.all <- sort(table(factor(m_ngrams[{
+      {
+        m_ngrams$input_4 == input_words[1]
+      }
+      
+    },]$input_5)), decreasing = TRUE)
   }
-    
-},]$input_5)), decreasing = TRUE)
-
-
-result.all <- sort(table(factor(m_ngrams[{
-  {
-      m_ngrams$input_4 == input_words[4]
-  }
-},]$input_5)), decreasing = TRUE)
-
-# is.element('morning', names(result.all))
-sort(result.all[test_words], decreasing=T)
-
-
-
-
-
-
-##
-## APPLY
-##
-input_text <- "Lorem IpsUm"
-
-predict <- function(input_text){
+  
+  return(names(head(result.all, top_selection)))
 }
 
-predict(input_text = "Cras iaculis") # Cras iaculis tortor
-predict(input_text = "Cras iaculis tortor") # Cras iaculis tortor vitae
-predict(input_text = "habitant morbi tristique senectus et") # habitant morbi tristique senectus et netus
+applyNgram(
+  ngram_data = m_ngrams,
+  input_text = input_text,
+  top_selection = 10
+)
+
+
+
